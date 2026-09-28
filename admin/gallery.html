@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery | Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link href="../css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header"><i class="fas fa-graduation-cap fa-2x text-warning"></i><h5 class="mt-2">Admin Panel</h5></div>
+      <ul class="sidebar-menu">
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+        <li><a href="teachers.html"><i class="fas fa-chalkboard-teacher"></i> Teachers</a></li>
+        <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+        <li><a href="fees.html"><i class="fas fa-money-bill-wave"></i> Fees</a></li>
+        <li><a href="exams.html"><i class="fas fa-file-alt"></i> Exams & Results</a></li>
+        <li><a href="timetable.html"><i class="fas fa-clock"></i> Timetable</a></li>
+        <li><a href="notices.html"><i class="fas fa-bullhorn"></i> Notices</a></li>
+        <li><a href="events.html"><i class="fas fa-calendar-day"></i> Events</a></li>
+        <li><a href="gallery.html" class="active"><i class="fas fa-images"></i> Gallery</a></li>
+        <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+      </ul>
+    </aside>
+    <div class="main-content">
+      <div class="topbar"><span class="fw-bold">Gallery Management</span><button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button></div>
+      <div class="content-area">
+        <div class="form-card mb-4">
+          <h5>Add Image (URL)</h5>
+          <div class="row g-3">
+            <div class="col-md-3"><input type="text" class="form-control" id="gTitle" placeholder="Title"></div>
+            <div class="col-md-3">
+              <select class="form-select" id="gCat">
+                <option>Building</option><option>Classroom</option><option>Sports</option><option>Events</option><option>Students</option><option>Teachers</option>
+              </select>
+            </div>
+            <div class="col-md-4"><input type="url" class="form-control" id="gUrl" placeholder="Image URL"></div>
+            <div class="col-md-2"><button class="btn btn-primary w-100" onclick="addImage()">Add</button></div>
+          </div>
+        </div>
+        <div class="row g-3" id="gList"></div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/main.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    if (!checkAuth(['admin'])) location.href = 'login.html';
+    let gallery = JSON.parse(localStorage.getItem('gallery') || '[]');
+    function render() {
+      document.getElementById('gList').innerHTML = gallery.map(g => `
+        <div class="col-6 col-md-3">
+          <div class="gallery-item">
+            <img src="${g.url}" alt="${g.title}">
+            <div class="overlay"><button class="btn btn-sm btn-danger" onclick="delImg(${g.id})"><i class="fas fa-trash"></i></button></div>
+          </div>
+          <p class="small text-center">${g.title} (${g.category})</p>
+        </div>`).join('') || '<p class="text-muted">No images</p>';
+    }
+    function addImage() {
+      const title = document.getElementById('gTitle').value.trim();
+      const category = document.getElementById('gCat').value;
+      const url = document.getElementById('gUrl').value.trim();
+      if (!title || !url) { showToast('Title and URL required', 'error'); return; }
+      gallery.push({ id: Date.now(), title, category, url });
+      localStorage.setItem('gallery', JSON.stringify(gallery));
+      showToast('Image added', 'success'); render();
+    }
+    function delImg(id) { if (!confirmDelete()) return; gallery = gallery.filter(g => g.id !== id); localStorage.setItem('gallery', JSON.stringify(gallery)); showToast('Deleted', 'success'); render(); }
+    render();
+  </script>
+</body>
+</html>

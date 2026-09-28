@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events | Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link href="../css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header"><i class="fas fa-graduation-cap fa-2x text-warning"></i><h5 class="mt-2">Admin Panel</h5></div>
+      <ul class="sidebar-menu">
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+        <li><a href="teachers.html"><i class="fas fa-chalkboard-teacher"></i> Teachers</a></li>
+        <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+        <li><a href="fees.html"><i class="fas fa-money-bill-wave"></i> Fees</a></li>
+        <li><a href="exams.html"><i class="fas fa-file-alt"></i> Exams & Results</a></li>
+        <li><a href="timetable.html"><i class="fas fa-clock"></i> Timetable</a></li>
+        <li><a href="notices.html"><i class="fas fa-bullhorn"></i> Notices</a></li>
+        <li><a href="events.html" class="active"><i class="fas fa-calendar-day"></i> Events</a></li>
+        <li><a href="gallery.html"><i class="fas fa-images"></i> Gallery</a></li>
+        <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+      </ul>
+    </aside>
+    <div class="main-content">
+      <div class="topbar"><span class="fw-bold">Events</span><button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button></div>
+      <div class="content-area">
+        <div class="form-card mb-4">
+          <h5>Add Event</h5>
+          <div class="row g-3">
+            <div class="col-md-3"><input type="text" class="form-control" id="eTitle" placeholder="Title"></div>
+            <div class="col-md-3"><input type="date" class="form-control" id="eDate"></div>
+            <div class="col-md-4"><input type="text" class="form-control" id="eDesc" placeholder="Description"></div>
+            <div class="col-md-2"><button class="btn btn-primary w-100" onclick="addEvent()">Add</button></div>
+          </div>
+        </div>
+        <div class="row g-3" id="eventsList"></div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/main.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    if (!checkAuth(['admin'])) location.href = 'login.html';
+    let events = JSON.parse(localStorage.getItem('events') || '[]');
+    function render() {
+      document.getElementById('eventsList').innerHTML = events.map(e => `
+        <div class="col-md-4">
+          <div class="feature-card text-start">
+            <h5>${e.title}</h5>
+            <p class="text-muted small"><i class="far fa-calendar me-1"></i>${formatDate(e.date)}</p>
+            <p>${e.description}</p>
+            <button class="btn btn-sm btn-outline-danger" onclick="delEvent(${e.id})"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>`).join('') || '<p class="text-muted">No events</p>';
+    }
+    function addEvent() {
+      const title = document.getElementById('eTitle').value.trim();
+      const date = document.getElementById('eDate').value;
+      const description = document.getElementById('eDesc').value.trim();
+      if (!title || !date) { showToast('Title and date required', 'error'); return; }
+      events.push({ id: Date.now(), title, date, description, image: '' });
+      localStorage.setItem('events', JSON.stringify(events));
+      showToast('Event added', 'success'); render();
+      document.getElementById('eTitle').value = ''; document.getElementById('eDate').value = ''; document.getElementById('eDesc').value = '';
+    }
+    function delEvent(id) { if (!confirmDelete()) return; events = events.filter(e => e.id !== id); localStorage.setItem('events', JSON.stringify(events)); showToast('Deleted', 'success'); render(); }
+    render();
+  </script>
+</body>
+</html>
